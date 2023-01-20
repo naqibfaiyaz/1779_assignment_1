@@ -121,8 +121,8 @@ DB_PORT=3306                # MySql port, default = 3306
 
 ```bash
 $ # Get the code
-$ git clone https://github.com/appseed-projects/53cdfe19-09b8-4455-afd6-2ce05d0f55bb.git
-$ cd 53cdfe19-09b8-4455-afd6-2ce05d0f55bb
+$ git clone https://github.com/naqibfaiyaz/1779_assignment_1.git
+$ cd 1779_assignment_1
 ```
 
 <br />
