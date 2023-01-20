@@ -29,6 +29,7 @@ app = create_app(app_config)
 Migrate(app, db)
 
 if not DEBUG:
+    app.logger.info('DEBUG            = ' + str(DEBUG) )
     Minify(app=app, html=True, js=False, cssless=False)
     
 if DEBUG:
@@ -36,6 +37,7 @@ if DEBUG:
     app.logger.info('Page Compression = ' + 'FALSE' if DEBUG else 'TRUE' )
     app.logger.info('DBMS             = ' + app_config.SQLALCHEMY_DATABASE_URI)
     app.logger.info('ASSETS_ROOT      = ' + app_config.ASSETS_ROOT )
+app.logger.info('basedir      = ' + app_config.basedir )
 
 if __name__ == "__main__":
     app.run()

@@ -14,6 +14,6 @@ class addPhotoForm(FlaskForm):
     key = StringField('Key',
                          id='key_photo_upload',
                          validators=[DataRequired()])
-    value = StringField('Value',
+    img = StringField('Image',
                              id='value_photo_upload',
                              validators=[DataRequired()])

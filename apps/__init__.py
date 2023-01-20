@@ -14,6 +14,8 @@ import logging
 global memcache
 memcache={}
 logging.info("Memcache Initialized: ", memcache)
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
 db = SQLAlchemy()
 login_manager = LoginManager()
@@ -53,10 +55,9 @@ def configure_database(app):
 
 
 def create_app(config):
-    logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
     app = Flask(__name__)
     app.config.from_object(config)
+    logger.info(config)
     register_extensions(app)
     register_blueprints(app)
     configure_database(app)

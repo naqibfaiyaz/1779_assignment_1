@@ -47,31 +47,37 @@
                                             </div>
                                             <div class="row">
                                                 <div class="col-md-6">
-                                                    {%if data%}
-                                                    {% for key in data %}
-                                                    <form action="{{ url_for('photoUpload_blueprint.putPhoto') }}" method="post">
+                                                    {%if data and key%}
+                                                    <form action="{{ url_for('photoUpload_blueprint.putPhoto') }}" method="post" enctype="multipart/form-data">
                                                         <div class="form-group">
                                                             <label for="key">Key</label>
                                                             <input type="text" class="form-control" id="key" name="key" placeholder="Enter the key" value={{key}}>
                                                         </div>
                                                         <div class="form-group">
-                                                            <label for="value">Value</label>
-                                                            <input type="text" class="form-control" id="value" name="value" placeholder="Enter the Value" value={{data[key]}}>
+                                                            <label>Image</label>
+                                                            <img src={{data.img}} width="100">
                                                         </div>
-                                                        <button type="submit" name="savePhoto" class="btn btn-primary">Submit</button>
+                                                        <div class="form-group">
+                                                            <label>Created At</label>
+                                                            <span src={{key}} width="100">{{data.created_at}}</span>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="value">New Image</label>
+                                                            <input type="file" class="form-control" id="value" name="image" placeholder="Enter the Value">
+                                                        </div>
+                                                        <button type="submit" name="savePhoto" class="btn btn-primary">Update Image</button>
                                                     </form>
-                                                    {% endfor %}
                                                     {% else %}
-                                                    <form action="{{ url_for('photoUpload_blueprint.putPhoto') }}" method="post">
+                                                    <form action="{{ url_for('photoUpload_blueprint.putPhoto') }}" method="post" enctype="multipart/form-data">
                                                         <div class="form-group">
                                                             <label for="key">Key</label>
                                                             <input type="text" class="form-control" id="key" name="key" placeholder="Enter the key">
                                                         </div>
                                                         <div class="form-group">
-                                                            <label for="value">Value</label>
-                                                            <input type="text" class="form-control" id="value" name="value" placeholder="Enter the Value">
+                                                            <label for="value">Image</label>
+                                                            <input type="file" class="form-control" id="value" name="image" placeholder="Enter the Value">
                                                         </div>
-                                                        <button type="submit" name="savePhoto" class="btn btn-primary">Submit</button>
+                                                        <button type="submit" name="savePhoto" class="btn btn-primary">Upload New Image</button>
                                                     </form>
                                                     {% endif %}
                                                 </div>

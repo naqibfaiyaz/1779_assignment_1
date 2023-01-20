@@ -8,9 +8,9 @@ from apps.services.memcache.util import getSingleCache, putCache, getAllCaches
 from flask import render_template, request, json, Response
 from flask_login import login_required
 from jinja2 import TemplateNotFound
-from apps import memcache
-import logging
+from apps import memcache,logger
 from apps.services.home.routes import get_segment
+from apps.services.photoUpload.util import upload_file
 
 @blueprint.route('/index')
 # @login_required
@@ -40,18 +40,22 @@ def route_template(template):
         return render_template('home/page-404.html'), 404
 
     except Exception as e:
-        logging.error(str(e))
+        logger.error(str(e))
         return render_template('home/page-500.html'), 500
 
 
 @blueprint.route('/put',methods=['POST', 'PUT'])
 def putPhoto():
+    # UPLOAD_FOLDER = apps.app_c'/static/assets/public/'
+    # ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
+    
     key = request.form.get('key')
-    value = request.form.get('value')
+    image = upload_file(request.files['image'])
+    logger.info(image)
 
-    response = putCache(key, value)
+    response = putCache(key, image)
 
-    logging.info('Put request received- ', key, value)
+    logger.info('Put request received- ', key, image)
 
     if 'savePhoto' in request.form:
         return render_template("photoUpload/addPhoto.html", msg=json.loads(response.data))
@@ -62,19 +66,19 @@ def putPhoto():
 @blueprint.route('/get/<url_key>',methods=['GET', 'POST'])
 def getSinglePhoto(url_key):
     key = url_key or request.form.get('key')
-    logging.info(request.form)
+    logger.info(request.form)
     cacheData = json.loads(getSingleCache(key).data)
-    logging.info('Get request received for single key- ' + key, cacheData)
-    logging.info(cacheData)
+    logger.info('Get request received for single key- ' + key, cacheData)
+    logger.info(cacheData)
     if url_key:
-        return render_template("photoUpload/addPhoto.html", data=cacheData)
+        return render_template("photoUpload/addPhoto.html", data=cacheData, key=key)
     return cacheData
 
 @blueprint.route('/getAll',methods=['POST'])
 def getAllPhotos():
-    logging.info('Get request received for all keys- ')
+    logger.info('Get request received for all keys- ')
 
     allCacheData = json.loads(getAllCaches().data)
 
-    logging.info(allCacheData)
+    logger.info(allCacheData)
     return allCacheData
