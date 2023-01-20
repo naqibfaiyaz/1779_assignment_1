@@ -40,7 +40,11 @@
                                         <div class="card-header">
                                             <h5>Photos</h5>
                                         </div>
+                                        {% if msg %}
+                                            <div class="card"><h5 class="text-info">{{ msg | safe }}</h5></div>
+                                            {% endif %}
                                         <div class="card-block table-border-style">
+                                            
                                             <a type="button" href="{{ url_for('photoUpload_blueprint.route_template', template='addPhoto.html') }}" class="btn btn-primary">Add New</a>
                                             <div class="table-responsive">
                                                 <table class="table table-hover">
@@ -52,6 +56,7 @@
                                                             <th>Created at</th>
                                                             <th>Accessed at</th>
                                                             <th>View</th>
+                                                            <th>Invalidate</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
@@ -64,6 +69,9 @@
                                                                 <td>{{memcache[key].created_at}}</td>
                                                                 <td>{{memcache[key].accessed_at}}</td>
                                                                 <td><a href="{{ url_for('photoUpload_blueprint.getSinglePhoto', url_key=key) }}" type="button" class="btn btn-info" title="View to Edit" data-toggle="tooltip" name="getPhoto">View & Edit</a></td>
+                                                                {% if memcache[key].img %}
+                                                                <td><a href="{{ url_for('photoUpload_blueprint.invalidateKey', url_key=key) }}" type="button" class="btn btn-warning" title="Invalidate" data-toggle="tooltip" name="invalidatePhoto">Invalidate</a></td>
+                                                                {% endif %}
                                                             </tr>
                                                             {% endfor %}
                                                         {% endif %}

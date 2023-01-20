@@ -4,7 +4,7 @@ Copyright (c) 2019 - present AppSeed.us
 """
 
 from apps.services.photoUpload import blueprint
-from apps.services.memcache.util import getSingleCache, putCache, getAllCaches
+from apps.services.memcache.util import getSingleCache, putCache, getAllCaches, invalidateCache
 from flask import render_template, request, json, Response
 from flask_login import login_required
 from jinja2 import TemplateNotFound
@@ -82,3 +82,14 @@ def getAllPhotos():
 
     logger.info(allCacheData)
     return allCacheData
+
+@blueprint.route('/invalivate_key', defaults={'url_key': None}, methods=['POST'])
+@blueprint.route('/invalivate_key/<url_key>',methods=['GET', 'POST'])
+def invalidateKey(url_key) :
+    key = url_key or request.form.get('key')
+    response = json.loads(invalidateCache(key).data)
+    logger.info('Cache invalidated for - ' + key)
+    logger.info(response)
+    if url_key:
+        return render_template("photoUpload/photos.html", msg=response, key=key)
+    return response

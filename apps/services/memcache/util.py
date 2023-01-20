@@ -69,3 +69,36 @@ def getAllCaches():
     except Exception as e:
         logging.error("Error from putCache: " + str(e))
         return json.dumps(e)
+
+def clearCache():
+    try:
+        memcache={}
+        response = Response(
+            response=json.dumps("All cache cleared"),
+            status=200,
+            mimetype='application/json'
+        )
+        
+        logger.info(response)
+        return response
+    except Exception as e:
+        logging.error("Error from putCache: " + str(e))
+        return json.dumps(e)
+
+def invalidateCache(key):
+    try:
+        memcache[key]={
+            "img": None,
+            "accessed_at": None,
+            "created_at": None,
+        }
+        response = Response(
+            response=json.dumps(key+" has been invalidated"),
+            status=200,
+            mimetype='application/json'
+        )
+        
+        return response
+    except Exception as e:
+        logging.error("Error from putCache: " + str(e))
+        return json.dumps(e)
