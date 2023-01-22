@@ -25,7 +25,7 @@ _templates
 
 # javascript
 package-lock.json
-.vscode/symbols.json
+.vscode
 
 apps/static/assets/public
 apps/static/assets/node_modules
