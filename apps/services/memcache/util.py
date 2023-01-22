@@ -102,7 +102,7 @@ def invalidateCache(key: str)->str:
     >>> invalidateCache('test1')
     '{"data": {}, "msg": "test1 has been invalidated"}'
     >>> invalidateCache('test1')
-    '{}'
+    '{"data": {}, "msg": "test1 is not present in the cache"}'
     """
 
     try:
