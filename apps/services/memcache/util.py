@@ -3,102 +3,125 @@
 Copyright (c) 2019 - present AppSeed.us
 """
 
-from flask import render_template, request, json, Response
-from flask_login import login_required
+from flask import json
 from apps import memcache,logger
-import logging, datetime
+import datetime
 
 
 # Inspiration -> https://www.vitoshacademy.com/hashing-passwords-in-python/
 
-
 def getSingleCache(key):
+    """Return json string of requested key and its value. Return "current key is not present in the cache" if key is not found.
+    >>> memcache["test1"]={"img": "http://127.0.0.1/static/asset/public/img1.jpg","accessed_at": "2023-12-12 16:40","created_at": "2023-12-12 16:40"}
+    >>> memcache["test2"]={"img": "http://127.0.0.1/static/asset/public/img1.jpg","accessed_at": "2023-12-12 16:40","created_at": "2023-12-12 16:40"}
+    >>> getSingleCache("test1")
+    '{"test1": {"accessed_at": "2023-12-12 16:40", "created_at": "2023-12-12 16:40", "img": "http://127.0.0.1/static/asset/public/img1.jpg"}}'
+    >>> invalidateCache('test1')
+    '{"data": {}, "msg": "test1 has been invalidated"}'
+    >>> getSingleCache("test1")
+    '{"msg": "test1 is not present in the cache"}'
+    """
     try:
         if key in memcache:
             jsonCache = memcache[key]
-            logger.info({
+            response = {
                 key: jsonCache
-                })
-            response = Response(
-                response=json.dumps(jsonCache),
-                status=200,
-                mimetype='application/json'
-            )
+            }
         else:
-            response = Response(
-                response=json.dumps("Unknown key"),
-                status=400,
-                mimetype='application/json'
-            )
+            response = {
+                "msg" : key + " is not present in the cache"
+            }
 
         logger.info(response)
-        return response
+        return json.dumps(response)
     except Exception as e:
-        logging.error("Error from putCache: " + str(e))
+        logger.error("Error from putCache: " + str(e))
         return json.dumps(e)
 
 def putCache(key, value):
-    memcache[key] = {
-        "img": value,
-        "accessed_at": None,
-        "created_at": datetime.datetime.now(),
-    }
-
-    logger.info(memcache[key])
+    """Return json string of requested key and its value after adding/replacing them in the cache
+    >>> putCache("test1", "/static/asset/public/img1.jpg") 
+    '{"data": {"test1": "/static/asset/public/img1.jpg"}, "msg": "test1 : Successfully Saved"}'
+    """
     try:
-        response = Response(
-            response=json.dumps(key + ' : Successfully Saved'),
-            status=200,
-            mimetype='application/json'
-        )
+        memcache[key] = {
+            "img": value,
+            "accessed_at": None,
+            "created_at": datetime.datetime.now(),
+        }
 
-        return response
+        logger.info(memcache[key])
+        response = {
+            "data": {
+                key: memcache[key]["img"]
+            },
+            "msg": key + ' : Successfully Saved'
+        }
+
+        return json.dumps(response)
     except Exception as e:
-        logging.error("Error from putCache: " + str(e))
+        logger.error("Error from putCache: " + str(e))
         return json.dumps(e)
 
 def getAllCaches():
+    """Return string, after invalidating a cache 
+    >>> memcache["test1"]={"img": "http://127.0.0.1/static/asset/public/img1.jpg","accessed_at": "2023-12-12 16:40","created_at": "2023-12-12 16:40"}
+    >>> memcache["test2"]={"img": "http://127.0.0.1/static/asset/public/img1.jpg","accessed_at": "2023-12-12 16:40","created_at": "2023-12-12 16:40"}
+    >>> getAllCaches()
+    '{"test1": {"accessed_at": "2023-12-12 16:40", "created_at": "2023-12-12 16:40", "img": "http://127.0.0.1/static/asset/public/img1.jpg"}, "test2": {"accessed_at": "2023-12-12 16:40", "created_at": "2023-12-12 16:40", "img": "http://127.0.0.1/static/asset/public/img1.jpg"}}'
+    """
+
     try:
-        response = Response(
-            response=json.dumps(memcache),
-            status=200,
-            mimetype='application/json'
-        )
+        response = memcache
         
-        return response
+        return json.dumps(response)
     except Exception as e:
-        logging.error("Error from putCache: " + str(e))
+        logger.error("Error from putCache: " + str(e))
         return json.dumps(e)
 
-def clearCache():
+def clearCache()->str:
+    """Return json string, after clearing cache 
+
+    >>> clearCache()
+    '{"data": {}, "msg": "All cache cleared"}'
+    """
     try:
         memcache={}
-        response = Response(
-            response=json.dumps("All cache cleared"),
-            status=200,
-            mimetype='application/json'
-        )
-        
-        logger.info(response)
-        return response
+        response={
+                "data": memcache,
+                "msg": "All cache cleared",
+            }
+        return json.dumps(response)
     except Exception as e:
-        logging.error("Error from putCache: " + str(e))
+        logger.error("Error from putCache: " + str(e))
         return json.dumps(e)
 
-def invalidateCache(key):
+def invalidateCache(key: str)->str:
+    """Return json string, after invalidating a cache 
+    >>> memcache["test1"]={"img": "http://127.0.0.1/static/asset/public/img1.jpg","accessed_at": "2023-12-12 16:40","created_at": "2023-12-12 16:40"}
+    >>> invalidateCache('test1')
+    '{"data": {}, "msg": "test1 has been invalidated"}'
+    >>> invalidateCache('test1')
+    '{}'
+    """
+
     try:
-        memcache[key]={
-            "img": None,
-            "accessed_at": None,
-            "created_at": None,
-        }
-        response = Response(
-            response=json.dumps(key+" has been invalidated"),
-            status=200,
-            mimetype='application/json'
-        )
+        if key in memcache:
+            del memcache[key]
+            response={
+                "data": memcache[key] if key in memcache else {},
+                "msg": key + " has been invalidated",
+            }
+        else:
+            response={
+                "data": memcache[key] if key in memcache else {},
+                "msg": key + " is not present in the cache",
+            }
+
+
         
-        return response
+        
+        return json.dumps(response)
     except Exception as e:
-        logging.error("Error from putCache: " + str(e))
+        logger.error("Error from putCache: " + str(e))
         return json.dumps(e)
