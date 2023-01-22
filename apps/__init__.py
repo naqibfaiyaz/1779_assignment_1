@@ -9,7 +9,7 @@ from flask import Flask
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 from importlib import import_module
-import logging
+import logging, doctest
 
 global memcache
 memcache={}
@@ -19,7 +19,6 @@ logger.setLevel(logging.DEBUG)
 
 db = SQLAlchemy()
 login_manager = LoginManager()
-
 
 def register_extensions(app):
     db.init_app(app)
