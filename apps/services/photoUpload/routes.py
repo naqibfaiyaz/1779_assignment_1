@@ -10,7 +10,7 @@ from flask_login import login_required
 from jinja2 import TemplateNotFound
 from apps import logger
 from apps.services.home.routes import get_segment
-from apps.services.photoUpload.util import upload_file
+from apps.services.photoUpload.util import upload_file, getBase64
 
 @blueprint.route('/index')
 # @login_required
@@ -51,9 +51,9 @@ def putPhoto():
     if request.form.get('key') and request.files['image']:
         key = request.form.get('key')
         image = upload_file(request.files['image'])
-        logger.info(image)
-
-        response = putCache(key, image)
+        base64_img=getBase64(image)
+        
+        response = putCache(key, base64_img)
 
         logger.info('Put request received- ' + key)
 
@@ -92,7 +92,7 @@ def getAllPhotos():
 
     allCacheData = json.loads(getAllCaches())
 
-    logger.info(allCacheData)
+    # logger.info(allCacheData)
     return allCacheData
 
 @blueprint.route('/invalivate_key', defaults={'url_key': None}, methods=['POST'])

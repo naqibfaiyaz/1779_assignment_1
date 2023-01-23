@@ -65,7 +65,7 @@
                                                             <tr>
                                                                 <th scope="row">{{loop.index}}</th>
                                                                 <td>{{key}}</td>
-                                                                <td><img src={{memcache[key].img}}/ width="50"/></td>
+                                                                <td><img src={{memcache[key].img}} width="50"/></td>
                                                                 <td>{{memcache[key].created_at}}</td>
                                                                 <td>{{memcache[key].accessed_at}}</td>
                                                                 <td><a href="{{ url_for('photoUpload_blueprint.getSinglePhoto', url_key=key) }}" type="button" class="btn btn-info" title="View to Edit" data-toggle="tooltip" name="getPhoto">View & Edit</a></td>

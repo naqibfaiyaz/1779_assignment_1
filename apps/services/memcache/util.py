@@ -50,7 +50,6 @@ def putCache(key, value):
             "created_at": datetime.datetime.now(),
         }
 
-        logger.info(memcache[key])
         response = {
             "data": {
                 key: memcache[key]["img"]
@@ -118,9 +117,6 @@ def invalidateCache(key: str)->str:
                 "msg": key + " is not present in the cache",
             }
 
-
-        
-        
         return json.dumps(response)
     except Exception as e:
         logger.error("Error from putCache: " + str(e))
