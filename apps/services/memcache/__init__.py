@@ -8,5 +8,5 @@ from flask import Blueprint
 blueprint = Blueprint(
     'memcache_blueprint',
     __name__,
-    url_prefix='/memcache'
+    url_prefix=''
 )

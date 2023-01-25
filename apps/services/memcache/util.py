@@ -24,19 +24,33 @@ def getSingleCache(key):
     try:
         if key in memcache:
             jsonCache = memcache[key]
+            jsonCache.update({"accessed_at": datetime.datetime.now()})
             response = {
-                key: jsonCache
+                "success": "true",
+                "keys": [key],
+                "content": jsonCache
             }
         else:
-            response = {
-                "msg" : key + " is not present in the cache"
-            }
+            raise ValueError(key + " is not present in the cache")
 
         logger.info(response)
         return json.dumps(response)
+    except ValueError as ve:
+        return json.dumps({
+            "success": "false",
+            "error": { 
+                "code": 400,
+                "message": str(ve)
+                }
+            })
     except Exception as e:
-        logger.error("Error from putCache: " + str(e))
-        return json.dumps(e)
+        return json.dumps({
+            "success": "false",
+            "error": { 
+                "code": 500,
+                "message": str(e)
+                }
+            })
 
 def putCache(key, value):
     """Return json string of requested key and its value after adding/replacing them in the cache
@@ -54,6 +68,8 @@ def putCache(key, value):
             "data": {
                 key: memcache[key]["img"]
             },
+            "success": "true",
+            "keys": [key],
             "msg": key + ' : Successfully Saved'
         }
 
@@ -73,7 +89,11 @@ def getAllCaches():
     try:
         response = memcache
         
-        return json.dumps(response)
+        return json.dumps({
+                "content": response,
+                "success": "true",
+                "keys": list(response.keys())
+            })
     except Exception as e:
         logger.error("Error from putCache: " + str(e))
         return json.dumps(e)
@@ -85,15 +105,22 @@ def clearCache()->str:
     '{"data": {}, "msg": "All cache cleared"}'
     """
     try:
-        memcache={}
+        data=memcache
+        memcache.clear()
         response={
-                "data": memcache,
-                "msg": "All cache cleared",
+                "success": "true",
+                "data": memcache
             }
         return json.dumps(response)
     except Exception as e:
         logger.error("Error from putCache: " + str(e))
-        return json.dumps(e)
+        return json.dumps({
+            "success": "false",
+            "error": { 
+                "code": 500,
+                "message": str(e)
+                }
+            })
 
 def invalidateCache(key: str)->str:
     """Return json string, after invalidating a cache 
