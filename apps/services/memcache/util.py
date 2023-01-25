@@ -15,11 +15,11 @@ def getSingleCache(key):
     >>> memcache["test1"]={"img": "http://127.0.0.1/static/asset/public/img1.jpg","accessed_at": "2023-12-12 16:40","created_at": "2023-12-12 16:40"}
     >>> memcache["test2"]={"img": "http://127.0.0.1/static/asset/public/img1.jpg","accessed_at": "2023-12-12 16:40","created_at": "2023-12-12 16:40"}
     >>> getSingleCache("test1")
-    '{"test1": {"accessed_at": "2023-12-12 16:40", "created_at": "2023-12-12 16:40", "img": "http://127.0.0.1/static/asset/public/img1.jpg"}}'
+    '{"content": {"accessed_at": "Wed, 25 Jan 2023 16:18:06 GMT", "created_at": "2023-12-12 16:40", "img": "http://127.0.0.1/static/asset/public/img1.jpg"}, "keys": ["test1"], "success": "true"}'
     >>> invalidateCache('test1')
     '{"data": {}, "msg": "test1 has been invalidated"}'
     >>> getSingleCache("test1")
-    '{"msg": "test1 is not present in the cache"}'
+    '{"error": {"code": 400, "message": "test1 is not present in the cache"}, "success": "false"}'
     """
     try:
         if key in memcache:
@@ -33,9 +33,10 @@ def getSingleCache(key):
         else:
             raise ValueError(key + " is not present in the cache")
 
-        logger.info(response)
+        logger.info("Response from getSingleCache ", str(response))
         return json.dumps(response)
     except ValueError as ve:
+        logger.error("Error from getSingleCache: " + str(ve))
         return json.dumps({
             "success": "false",
             "error": { 
@@ -44,6 +45,7 @@ def getSingleCache(key):
                 }
             })
     except Exception as e:
+        logger.error("Error from getSingleCache: " + str(e))
         return json.dumps({
             "success": "false",
             "error": { 
@@ -55,7 +57,7 @@ def getSingleCache(key):
 def putCache(key, value):
     """Return json string of requested key and its value after adding/replacing them in the cache
     >>> putCache("test1", "/static/asset/public/img1.jpg") 
-    '{"data": {"test1": "/static/asset/public/img1.jpg"}, "msg": "test1 : Successfully Saved"}'
+    '{"data": {"test1": "/static/asset/public/img1.jpg"}, "keys": ["test1"], "msg": "test1 : Successfully Saved", "success": "true"}'
     """
     try:
         memcache[key] = {
@@ -73,6 +75,7 @@ def putCache(key, value):
             "msg": key + ' : Successfully Saved'
         }
 
+        logger.info("response from putCache " + str(response))
         return json.dumps(response)
     except Exception as e:
         logger.error("Error from putCache: " + str(e))
@@ -83,37 +86,39 @@ def getAllCaches():
     >>> memcache["test1"]={"img": "http://127.0.0.1/static/asset/public/img1.jpg","accessed_at": "2023-12-12 16:40","created_at": "2023-12-12 16:40"}
     >>> memcache["test2"]={"img": "http://127.0.0.1/static/asset/public/img1.jpg","accessed_at": "2023-12-12 16:40","created_at": "2023-12-12 16:40"}
     >>> getAllCaches()
-    '{"test1": {"accessed_at": "2023-12-12 16:40", "created_at": "2023-12-12 16:40", "img": "http://127.0.0.1/static/asset/public/img1.jpg"}, "test2": {"accessed_at": "2023-12-12 16:40", "created_at": "2023-12-12 16:40", "img": "http://127.0.0.1/static/asset/public/img1.jpg"}}'
+    '{"content": {"test1": {"accessed_at": "2023-12-12 16:40", "created_at": "2023-12-12 16:40", "img": "http://127.0.0.1/static/asset/public/img1.jpg"}, "test2": {"accessed_at": "2023-12-12 16:40", "created_at": "2023-12-12 16:40", "img": "http://127.0.0.1/static/asset/public/img1.jpg"}}, "keys": ["test1", "test2"], "success": "true"}'
     """
 
     try:
-        response = memcache
-        
-        return json.dumps({
-                "content": response,
+        cachedData = memcache
+        response = json.dumps({
+                "content": cachedData ,
                 "success": "true",
-                "keys": list(response.keys())
+                "keys": list(cachedData.keys())
             })
+
+        logger.info("response from getAllCaches " + str(response))
+        return response
     except Exception as e:
-        logger.error("Error from putCache: " + str(e))
+        logger.error("Error from getAllCaches: " + str(e))
         return json.dumps(e)
 
 def clearCache()->str:
     """Return json string, after clearing cache 
 
     >>> clearCache()
-    '{"data": {}, "msg": "All cache cleared"}'
+    '{"data": {}, "success": "true"}'
     """
     try:
-        data=memcache
         memcache.clear()
         response={
                 "success": "true",
                 "data": memcache
             }
+        logger.info("response from clearCache " + str(response))
         return json.dumps(response)
     except Exception as e:
-        logger.error("Error from putCache: " + str(e))
+        logger.error("Error from clearCache: " + str(e))
         return json.dumps({
             "success": "false",
             "error": { 
@@ -144,7 +149,8 @@ def invalidateCache(key: str)->str:
                 "msg": key + " is not present in the cache",
             }
 
+        logger.info("response from invalidateCache: " + str(response))
         return json.dumps(response)
     except Exception as e:
-        logger.error("Error from putCache: " + str(e))
+        logger.error("Error from invalidateCache: " + str(e))
         return json.dumps(e)
