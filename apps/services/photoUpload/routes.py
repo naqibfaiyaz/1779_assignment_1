@@ -5,7 +5,7 @@ Copyright (c) 2019 - present AppSeed.us
 
 from apps.services.photoUpload import blueprint
 from apps.services.memcache.util import getSingleCache, putCache, getAllCaches, invalidateCache
-from flask import render_template, request, json, redirect, url_for
+from flask import render_template, request, json, redirect, url_for, Response
 from flask_login import login_required
 from jinja2 import TemplateNotFound
 from apps import logger
@@ -64,14 +64,14 @@ def putPhoto():
     else:
         key = request.form.get('key')
         cacheData = json.loads(getSingleCache(key))
-        if key in cacheData:
-            return render_template("photoUpload/addPhoto.html", msg="Key exists, please upload a new image", data=cacheData[key], key=key)
-        elif key not in cacheData and "msg" in cacheData:
+        if "content" in cacheData:
+            return render_template("photoUpload/addPhoto.html", msg="Key exists, please upload a new image", data=cacheData["content"], key=key)
+        elif key not in cacheData and "error" in cacheData:
             return render_template("photoUpload/addPhoto.html", msg="Key/Image mismatch, please upload properly")
 
     
 
-@blueprint.route('/get', defaults={'url_key': None}, methods=['POST'])
+# @blueprint.route('/get', defaults={'url_key': None}, methods=['POST'])
 @blueprint.route('/get/<url_key>',methods=['GET', 'POST'])
 def getSinglePhoto(url_key):
     key = url_key or request.form.get('key')
@@ -79,18 +79,21 @@ def getSinglePhoto(url_key):
     cacheData = json.loads(getSingleCache(key))
     logger.info('Get request received for single key- ' + key, cacheData)
     logger.info(cacheData)
-    if url_key and key in cacheData:
-        return render_template("photoUpload/addPhoto.html", data=cacheData[key], key=key)
-    elif url_key and key not in cacheData and "msg" in cacheData:
-        return render_template("photoUpload/addPhoto.html", msg=cacheData["msg"], key=key)
+    logger.info(request.method)
+    if request.method=='GET' and "content" in cacheData:
+        return render_template("photoUpload/addPhoto.html", data=cacheData["content"], key=key)
+    elif request.method=='GET' and "content" not in cacheData and "error" in cacheData:
+        return render_template("photoUpload/addPhoto.html", msg=cacheData["error"]["message"], key=key)
 
-    return cacheData
+    return Response(
+        response=json.dumps(cacheData),
+        status=cacheData["error"]["code"] if "error" in cacheData else 200)
 
 @blueprint.route('/getAll',methods=['POST'])
 def getAllPhotos():
     logger.info('Get request received for all keys- ')
 
-    allCacheData = json.loads(getAllCaches())
+    allCacheData = json.loads(getAllCaches())["content"]
 
     # logger.info(allCacheData)
     return allCacheData
