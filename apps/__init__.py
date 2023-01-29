@@ -13,6 +13,12 @@ import logging, doctest
 
 global memcache
 memcache={}
+global memcache_config
+memcache_config = {
+    "memcache_poilcy": "LRU",
+    "memcache_capacity": 1000000,
+    "memcache_size": 0
+}
 logging.info("Memcache Initialized: ", memcache)
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)

@@ -3,9 +3,13 @@
 Copyright (c) 2019 - present AppSeed.us
 """
 
+from pympler import asizeof
+import random
+import time
 from flask import json
-from apps import memcache,logger
+from apps import memcache,memcache_config,logger
 import datetime
+import pandas as pd
 
 
 # Inspiration -> https://www.vitoshacademy.com/hashing-passwords-in-python/
@@ -15,7 +19,7 @@ def getSingleCache(key):
     >>> memcache["test1"]={"img": "http://127.0.0.1/static/asset/public/img1.jpg","accessed_at": "2023-12-12 16:40","created_at": "2023-12-12 16:40"}
     >>> memcache["test2"]={"img": "http://127.0.0.1/static/asset/public/img1.jpg","accessed_at": "2023-12-12 16:40","created_at": "2023-12-12 16:40"}
     >>> getSingleCache("test1")
-    '{"content": {"accessed_at": "Wed, 25 Jan 2023 16:18:06 GMT", "created_at": "2023-12-12 16:40", "img": "http://127.0.0.1/static/asset/public/img1.jpg"}, "keys": ["test1"], "success": "true"}'
+    '{"content": {"accessed_at": "Wed, 25 Jan 2023 16:18:06 GMT", "created_at": "2023-12-12 16:40", "img": "http://127.0.0.1/static/asset/public/img1.jpg"}, "key": ["test1"], "success": "true"}'
     >>> invalidateCache('test1')
     '{"data": {}, "msg": "test1 has been invalidated"}'
     >>> getSingleCache("test1")
@@ -25,9 +29,10 @@ def getSingleCache(key):
         if key in memcache:
             jsonCache = memcache[key]
             jsonCache.update({"accessed_at": datetime.datetime.now()})
+            jsonCache.update({"accessed_at_in_millis": round(time.time())})
             response = {
                 "success": "true",
-                "keys": [key],
+                "key": [key],
                 "content": jsonCache
             }
         else:
@@ -59,12 +64,34 @@ def putCache(key, value):
     >>> putCache("test1", "/static/asset/public/img1.jpg") 
     '{"data": {"test1": "/static/asset/public/img1.jpg"}, "keys": ["test1"], "msg": "test1 : Successfully Saved", "success": "true"}'
     """
+    image_size = asizeof.asizeof(value)
+
+    if image_size > memcache_config["memcache_capacity"]:
+        logger.warning("putCache: Image Size exceeds memcache capacity.")
+        response = {"data": {}}
+        return response
+
+    memcache_free_space = memcache_config["memcache_capacity"] - memcache_config["memcache_size"]
+    if image_size > memcache_free_space:
+        try:
+            logger.info("putCache: Freeing up Cache.")
+            freeCache(image_size - memcache_free_space)
+
+        except Exception as e:
+            logger.error("Error from freeCache: " + str(e))
+            logger.warning("Could not free up space for putCache.")
+            return json.dumps(e)
+
     try:
         memcache[key] = {
             "img": value,
-            "accessed_at": None,
+            "accessed_at": datetime.datetime.now(),
+            "accessed_at_in_millis": round(time.time()),
             "created_at": datetime.datetime.now(),
+            "image_size": image_size
         }
+
+        memcache_config["memcache_size"] += image_size
 
         response = {
             "data": {
@@ -80,6 +107,45 @@ def putCache(key, value):
     except Exception as e:
         logger.error("Error from putCache: " + str(e))
         return json.dumps(e)
+
+def freeCache(space_required):
+    memcache_policy = memcache_config["memcache_policy"]
+    freed_space = 0
+
+    try:
+        if memcache_policy == "LRU":
+
+            df_memcache = pd.DataFrame.from_dict(memcache).T
+            df_memcache = df_memcache[["accessed_at_in_millis"]]
+            df_memcache = df_memcache.sort_values(by="accessed_at_in_millis", ascending=True).T
+
+            while freed_space < space_required:
+                element_to_delete = df_memcache.pop(df_memcache.columns[0]).name
+                freed_space_from_single = memcache[element_to_delete]["image_size"]
+                invalidateCache(element_to_delete)
+                memcache_config["memcache_size"] -= freed_space_from_single
+                freed_space += freed_space_from_single
+                index += 1
+
+        elif memcache_policy == "random":
+            while freed_space < space_required:
+                element_to_delete = random.choice(list(memcache.keys()))
+                freed_space_from_single = memcache[element_to_delete]["image_size"]
+                invalidateCache(element_to_delete)
+                memcache_config["memcache_size"] -= freed_space_from_single
+                freed_space += freed_space_from_single
+
+        # else:
+        #     logger.error()
+        #     raise Exception("No valid memcache policy selected.")
+
+        response = json.dumps({"success": "true"})
+        return response
+
+    except Exception as e:
+        logger.error("Error from freeCache: " + str(e))
+        return json.dumps(e)
+
 
 def getAllCaches():
     """Return string, after invalidating a cache 
