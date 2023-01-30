@@ -64,6 +64,7 @@ def putCache(key, value):
     >>> putCache("test1", "/static/asset/public/img1.jpg") 
     '{"data": {"test1": "/static/asset/public/img1.jpg"}, "keys": ["test1"], "msg": "test1 : Successfully Saved", "success": "true"}'
     """
+    memcache_config["memcache_size"]=asizeof.asizeof(memcache)
     image_size = asizeof.asizeof(value)
 
     if image_size > memcache_config["memcache_capacity"]:
