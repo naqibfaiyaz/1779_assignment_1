@@ -8,8 +8,8 @@ from flask import render_template, json, request
 # from flask_login import login_required
 from apps.services.memcache.util import clearCache, getAllCaches, putCache, getSingleCache
 from apps.services.photoUpload.util import upload_file, getBase64
-from apps import memcache, logging
-# from pympler import asizeof
+from apps import memcache, logging, memcache_config
+from pympler import asizeof
 # import sys
 
 
@@ -48,10 +48,22 @@ def test_upload():
     else:
         return json.dumps({"Failure: No image given."})
 
-@blueprint.route('/api/key/<key>', methods={"POST"})
-def test_retrieval(key):
+@blueprint.route('/api/key/<url_key>', methods={"POST"})
+def test_retrieval(url_key):
+    key = url_key or request.form.get('key')
     logging.info(getSingleCache(key))
     return getSingleCache(key)
+
+
+@blueprint.route('/api/getMemcacheSize', methods={"GET"})
+def test_getMemcacheSize():
+    return {
+        "size": asizeof.asizeof(memcache)
+    }
+
+@blueprint.route('/api/getConfig', methods={"GET"})
+def test_getConfig():
+    return memcache_config
 
 # @blueprint.route('/getCacheSize')
 # def getCacheSize():

@@ -15,7 +15,7 @@ import pandas as pd
 # Inspiration -> https://www.vitoshacademy.com/hashing-passwords-in-python/
 
 def getSingleCache(key):
-    """Return json string of requested key and its value. Return "current key is not present in the cache" if key is not found.
+    """Return json string of requested key and its value. Return "current key is not present in the cache" if key is not found. This test will not be passed as there are time info in the variable.
     >>> memcache["test1"]={"img": "http://127.0.0.1/static/asset/public/img1.jpg","accessed_at": "2023-12-12 16:40","created_at": "2023-12-12 16:40"}
     >>> memcache["test2"]={"img": "http://127.0.0.1/static/asset/public/img1.jpg","accessed_at": "2023-12-12 16:40","created_at": "2023-12-12 16:40"}
     >>> getSingleCache("test1")
@@ -125,7 +125,7 @@ def freeCache(space_required):
                 invalidateCache(element_to_delete)
                 memcache_config["memcache_size"] -= freed_space_from_single
                 freed_space += freed_space_from_single
-                index += 1
+                # index += 1
 
         elif memcache_policy == "random":
             while freed_space < space_required:

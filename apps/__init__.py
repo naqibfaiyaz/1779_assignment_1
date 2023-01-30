@@ -15,7 +15,7 @@ global memcache
 memcache={}
 global memcache_config
 memcache_config = {
-    "memcache_poilcy": "LRU",
+    "memcache_policy": "LRU",
     "memcache_capacity": 1000000,
     "memcache_size": 0
 }
