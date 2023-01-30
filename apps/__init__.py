@@ -22,7 +22,7 @@ memcache_config = {
 logging.info("Memcache Initialized: ", memcache)
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
-
+api_endpoint='http://localhost:5000/api'
 db = SQLAlchemy()
 login_manager = LoginManager()
 

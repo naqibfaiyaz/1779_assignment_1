@@ -6,8 +6,8 @@ Copyright (c) 2019 - present AppSeed.us
 from apps.services.memcache import blueprint
 from flask import render_template, json, request
 # from flask_login import login_required
-from apps.services.memcache.util import clearCache, getAllCaches, putCache, getSingleCache
-from apps.services.photoUpload.util import upload_file, getBase64
+from apps.services.memcache.util import clearCache, getAllCaches, putCache, getSingleCache, invalidateCache
+from apps.services.helper import upload_file, getBase64
 from apps import memcache, logging, memcache_config
 from pympler import asizeof
 # import sys
@@ -26,16 +26,20 @@ def clear():
 def refreshConfiguration():
     return 
 
-@blueprint.route('/api/delete_all', methods={"POST"})
+@blueprint.route('/api/delete_all', methods=["POST"])
 def test_delete_all():
     #logging.info(clearCache())
     return clearCache()
 
-@blueprint.route('/api/list_keys', methods={"POST"})
+@blueprint.route('/api/list_keys', methods=["POST"])
 def test_list_keys():
     return getAllCaches()
 
-@blueprint.route('/api/upload', methods={"POST"})
+@blueprint.route('/api/invalidate/<url_key>', methods=["GET","POST"])
+def test_invalidate(url_key):
+    return invalidateCache(url_key)
+
+@blueprint.route('/api/upload', methods=["POST"])
 def test_upload():
     if request.form.get('key') and request.files['file']:
         key = request.form.get('key')
@@ -48,7 +52,7 @@ def test_upload():
     else:
         return json.dumps({"Failure: No image given."})
 
-@blueprint.route('/api/key/<url_key>', methods={"POST"})
+@blueprint.route('/api/key/<url_key>', methods=["POST"])
 def test_retrieval(url_key):
     key = url_key or request.form.get('key')
     logging.info(getSingleCache(key))
