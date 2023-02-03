@@ -29,6 +29,16 @@ class knownKeys(db.Model):
                 value = value[0]
 
             setattr(self, property, value)
+        
+    @property
+    def serialize(self):
+        return {
+                'id': self.id,
+                'key': self.key,
+                'img_path': self.img_path,
+                'created_at': self.created_at,
+                'updated_at': self.updated_at
+        }
 
 class memcahceRequests(db.Model):
 
@@ -36,7 +46,7 @@ class memcahceRequests(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     type = db.Column(Enum('hit','miss'))
-    known_key = db.Column(db.String(64), ForeignKey(knownKeys.key), nullable=True)
+    known_key = db.Column(db.String(64), nullable=True)
     created_at = db.Column(db.TIMESTAMP, server_default=text('CURRENT_TIMESTAMP'))
     updated_at = db.Column(db.TIMESTAMP, server_default=text('CURRENT_TIMESTAMP'))
 

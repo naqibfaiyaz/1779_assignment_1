@@ -4,7 +4,7 @@ Copyright (c) 2019 - present AppSeed.us
 """
 
 from apps.services.memcache import blueprint
-from flask import render_template, json, request
+from flask import render_template, json, request, jsonify
 # from flask_login import login_required
 
 from apps.services.memcache.util import clearCache, getAllCaches, putCache, getSingleCache, invalidateCache, getCurrentPolicy, setCurrentPolicy
@@ -26,12 +26,29 @@ def clear():
 
 @blueprint.route('/api/delete_all', methods=["POST"])
 def test_delete_all():
-    #logging.info(clearCache())
-    return clearCache()
+    try:
+        db.session.query(knownKeys).delete()
+        db.session.commit()
+
+        response = clearCache()
+    except:
+        db.session.rollback()
+    return response
+
+@blueprint.route('/api/list_cache', methods=["POST"])
+def test_list_keys_cache():
+    return getAllCaches()
 
 @blueprint.route('/api/list_keys', methods=["POST"])
-def test_list_keys():
-    return getAllCaches()
+def test_list_keys_db():
+    allDBKeys=knownKeys.query.all()
+    knownKeysInDB={i.key:i.serialize for i in allDBKeys}
+    print(type(knownKeysInDB))
+    return {
+                "content": knownKeysInDB,
+                "success": "true",
+                "keys": list(knownKeysInDB.keys())
+            }
 
 @blueprint.route('/api/invalidate/<url_key>', methods=["GET","POST"])
 def test_invalidate(url_key):
@@ -68,25 +85,20 @@ def test_upload():
 @blueprint.route('/api/key/<url_key>', methods=["POST"])
 def test_retrieval(url_key):
     requestedKey = url_key or request.form.get('key')
-    response = json.loads(getSingleCache(requestedKey))
-
-
-    knowKey=None
+    response = getSingleCache(requestedKey)
 
     if "success" in response and response['success']=="true":
         cacheState='hit'
-        knowKey=requestedKey
     else:
         cacheState='miss'
         keyFromDB = knownKeys.query.filter_by(key=requestedKey).first()
         if keyFromDB:
-            knowKey=keyFromDB.key
             image_path=keyFromDB.img_path
             base64_img=getBase64(image_path)
-            response = json.loads(getSingleCache(requestedKey)) if json.loads(putCache(requestedKey, base64_img))["success"]=="true" else {"data": {"success": True, "key": knowKey, "content": image_path}}
+            response = getSingleCache(requestedKey) if putCache(requestedKey, base64_img)["success"]=="true" else {"data": {"success": True, "key": knowKey, "content": image_path}}
     
     newRequest = memcahceRequests(type = cacheState,
-                    known_key = knowKey)
+                    known_key = requestedKey)
     db.session.add(newRequest)   
     db.session.commit()
     response['cache_status'] = cacheState

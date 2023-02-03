@@ -40,25 +40,25 @@ def getSingleCache(key):
             raise ValueError(key + " is not present. Please upload the key and image.")
 
         logger.info("Response from getSingleCache ", str(response["success"]))
-        return json.dumps(response)
+        return response
     except ValueError as ve:
         logger.error("Error from getSingleCache: " + str(ve))
-        return json.dumps({
+        return {
             "success": "false",
             "error": { 
                 "code": 400,
                 "message": str(ve)
                 }
-            })
+            }
     except Exception as e:
         logger.error("Error from getSingleCache: " + str(e))
-        return json.dumps({
+        return {
             "success": "false",
             "error": { 
                 "code": 500,
                 "message": str(e)
                 }
-            })
+            }
 
 def putCache(key, value):
     """Return json string of requested key and its value after adding/replacing them in the cache
@@ -85,7 +85,7 @@ def putCache(key, value):
         except Exception as e:
             logger.error("Error from freeCache: " + str(e))
             logger.warning("Could not free up space for putCache.")
-            return json.dumps(e)
+            return e
 
     try:
         memcache[key] = {
@@ -103,21 +103,21 @@ def putCache(key, value):
                 key: memcache[key]["img"]
             },
             "success": "true",
-            "keys": [key],
+            "key": [key],
             "msg": key + ' : Successfully Saved'
         }
 
         logger.info("response from putCache " + str(response["success"]))
-        return json.dumps(response)
+        return response
     except Exception as e:
         logger.error("Error from putCache: " + str(e))
-        return json.dumps({
+        return {
             "success": "false",
             "error": { 
                 "code": 500,
                 "message": str(e)
                 }
-            })
+            }
 
 def freeCache(space_required):
     memcache_policy = memcache_config["memcache_policy"]
@@ -150,12 +150,12 @@ def freeCache(space_required):
         #     logger.error()
         #     raise Exception("No valid memcache policy selected.")
 
-        response = json.dumps({"success": "true"})
+        response = {"success": "true"}
         return response
 
     except Exception as e:
         logger.error("Error from freeCache: " + str(e))
-        return json.dumps(e)
+        return e
 
 
 def getAllCaches():
@@ -168,17 +168,17 @@ def getAllCaches():
 
     try:
         cachedData = memcache
-        response = json.dumps({
+        response = {
                 "content": cachedData ,
                 "success": "true",
                 "keys": list(cachedData.keys())
-            })
+            }
 
         logger.info("response from getAllCaches " + str(response))
         return response
     except Exception as e:
         logger.error("Error from getAllCaches: " + str(e))
-        return json.dumps(e)
+        return e
 
 def clearCache()->str:
     """Return json string, after clearing cache 
@@ -193,16 +193,16 @@ def clearCache()->str:
                 "data": memcache
             }
         logger.info("response from clearCache " + str(response))
-        return json.dumps(response)
+        return response
     except Exception as e:
         logger.error("Error from clearCache: " + str(e))
-        return json.dumps({
+        return {
             "success": "false",
             "error": { 
                 "code": 500,
                 "message": str(e)
                 }
-            })
+            }
 
 def invalidateCache(key: str)->str:
     """Return json string, after invalidating a cache 
@@ -227,13 +227,16 @@ def invalidateCache(key: str)->str:
             }
 
         logger.info("response from invalidateCache: " + str(response))
-        return json.dumps(response)
+        return response
     except Exception as e:
         logger.error("Error from invalidateCache: " + str(e))
-        return json.dumps(e)
+        return e
 
 def getCurrentPolicy():
-    return memcache_config
+    return {
+        "success": "true",
+        "content": memcache_config
+    }
 
 def setCurrentPolicy(policy, capacity):
     memcache_config["memcache_policy"]=policy
@@ -242,4 +245,7 @@ def setCurrentPolicy(policy, capacity):
     memcache_free_space = memcache_config["memcache_capacity"] - memcache_config["memcache_size"]
     image_size=0
     freeCache(image_size - memcache_free_space)
-    return memcache_config
+    return {
+        "success": "true",
+        "content": memcache_config
+    }
