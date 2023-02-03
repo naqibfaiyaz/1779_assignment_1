@@ -22,17 +22,16 @@ memcache_config = {
 logging.info("Memcache Initialized: ", memcache)
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
-api_endpoint='http://localhost:5000/api'
 db = SQLAlchemy()
-login_manager = LoginManager()
+# login_manager = LoginManager()
 
 def register_extensions(app):
     db.init_app(app)
-    login_manager.init_app(app)
+    # login_manager.init_app(app)
 
 
 def register_blueprints(app):
-    for module_name in ('authentication', 'home', 'memcache'):
+    for module_name in ('home', 'memcache'):
         module = import_module('apps.services.{}.routes'.format(module_name))
         app.register_blueprint(module.blueprint)
 

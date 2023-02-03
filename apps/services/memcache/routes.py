@@ -10,7 +10,7 @@ from flask import render_template, json, request
 from apps.services.memcache.util import clearCache, getAllCaches, putCache, getSingleCache, invalidateCache, getCurrentPolicy, setCurrentPolicy
 from apps.services.memcache.forms import ImageForm
 from apps.services.helper import upload_file, getBase64
-from apps import memcache, logging, memcache_config, db
+from apps import memcache, logging, db
 from pympler import asizeof
 from apps.services.memcache.models import memcahceRequests, knownKeys, policyConfig
 import re
