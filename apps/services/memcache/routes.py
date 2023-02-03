@@ -109,11 +109,22 @@ def test_retrieval(url_key):
 def refreshConfiguration():
     if request.form.get("replacement_policy") and request.form.get("capacity"):
         currentPolicy=policyConfig.query.filter_by(policy_name='replacement_policy').first()
-        currentPolicy.value=request.form.get("replacement_policy")
+        if currentPolicy:
+            currentPolicy.value=request.form.get("replacement_policy")
+        else:
+            newPolicy = policyConfig(policy_name = "replacement_policy",
+                    value = request.form.get("replacement_policy"))
+            db.session.add(newPolicy)  
         db.session.commit()
 
         currentcapacity=policyConfig.query.filter_by(policy_name='capacity').first()
-        currentcapacity.value=request.form.get("capacity")
+        if currentcapacity:
+            currentcapacity.value=request.form.get("capacity")
+        else:
+            newPolicy = policyConfig(policy_name = "capacity",
+                    value = request.form.get("capacity"))
+            db.session.add(newPolicy)  
+        
         db.session.commit()
         return setCurrentPolicy(request.form.get("replacement_policy"), request.form.get("capacity"))
     else: 
