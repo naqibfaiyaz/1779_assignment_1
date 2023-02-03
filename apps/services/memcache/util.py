@@ -7,9 +7,10 @@ from pympler import asizeof
 import random
 import time
 from flask import json
-from apps import memcache,memcache_config,logger
+from apps import memcache, logger, memcache_config
 import datetime
 import pandas as pd
+from apps.services.memcache.models import policyConfig
 
 
 # Inspiration -> https://www.vitoshacademy.com/hashing-passwords-in-python/
@@ -36,9 +37,9 @@ def getSingleCache(key):
                 "content": jsonCache
             }
         else:
-            raise ValueError(key + " is not present in the cache")
+            raise ValueError(key + " is not present. Please upload the key and image.")
 
-        logger.info("Response from getSingleCache ", str(response))
+        logger.info("Response from getSingleCache ", str(response["success"]))
         return json.dumps(response)
     except ValueError as ve:
         logger.error("Error from getSingleCache: " + str(ve))
@@ -64,11 +65,15 @@ def putCache(key, value):
     >>> putCache("test1", "/static/asset/public/img1.jpg") 
     '{"data": {"test1": "/static/asset/public/img1.jpg"}, "keys": ["test1"], "msg": "test1 : Successfully Saved", "success": "true"}'
     """
+    setCurrentPolicy(policyConfig.query.filter_by(policy_name='replacement_policy').first().value, policyConfig.query.filter_by(policy_name='capacity').first().value)
+    memcache_config["memcache_size"] = asizeof.asizeof(memcache)
+    
+    logger.info(memcache_config)
     image_size = asizeof.asizeof(value)
 
     if image_size > memcache_config["memcache_capacity"]:
         logger.warning("putCache: Image Size exceeds memcache capacity.")
-        response = {"data": {}}
+        response = {"success": "false","msg": "Image Size exceeds memcache capacity, inserted in table not in memcache"}
         return response
 
     memcache_free_space = memcache_config["memcache_capacity"] - memcache_config["memcache_size"]
@@ -102,11 +107,17 @@ def putCache(key, value):
             "msg": key + ' : Successfully Saved'
         }
 
-        logger.info("response from putCache " + str(response))
+        logger.info("response from putCache " + str(response["success"]))
         return json.dumps(response)
     except Exception as e:
         logger.error("Error from putCache: " + str(e))
-        return json.dumps(e)
+        return json.dumps({
+            "success": "false",
+            "error": { 
+                "code": 500,
+                "message": str(e)
+                }
+            })
 
 def freeCache(space_required):
     memcache_policy = memcache_config["memcache_policy"]
@@ -220,3 +231,15 @@ def invalidateCache(key: str)->str:
     except Exception as e:
         logger.error("Error from invalidateCache: " + str(e))
         return json.dumps(e)
+
+def getCurrentPolicy():
+    return memcache_config
+
+def setCurrentPolicy(policy, capacity):
+    memcache_config["memcache_policy"]=policy
+    memcache_config["memcache_capacity"]=int(capacity)
+
+    memcache_free_space = memcache_config["memcache_capacity"] - memcache_config["memcache_size"]
+    image_size=0
+    freeCache(image_size - memcache_free_space)
+    return memcache_config
