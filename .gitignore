@@ -10,6 +10,8 @@ __pycache__/
 *.db
 *.sqlite3
 *.log
+*.sql
+sql
 
 # venv
 env

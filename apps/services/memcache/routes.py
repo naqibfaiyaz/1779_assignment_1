@@ -70,6 +70,7 @@ def test_retrieval(url_key):
     requestedKey = url_key or request.form.get('key')
     response = json.loads(getSingleCache(requestedKey))
 
+
     knowKey=None
 
     if "success" in response and response['success']=="true":

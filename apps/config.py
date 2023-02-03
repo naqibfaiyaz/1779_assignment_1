@@ -59,12 +59,16 @@ class ProductionConfig(Config):
     DEBUG = False
 
     # Security
-    SESSION_COOKIE_HTTPONLY = True
-    REMEMBER_COOKIE_HTTPONLY = True
-    REMEMBER_COOKIE_DURATION = 3600
+    # SESSION_COOKIE_HTTPONLY = True
+    # REMEMBER_COOKIE_HTTPONLY = True
+    # REMEMBER_COOKIE_DURATION = 3600
+    WTF_CSRF_ENABLED = True
+    SECRET_KEY = "atsgychujwegji16342184782108329"
 
 class DebugConfig(Config):
     DEBUG = True
+    WTF_CSRF_ENABLED = True
+    SECRET_KEY = "atsgychujwegji16342184782108329"
 
 
 # Load all possible configurations
