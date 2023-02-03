@@ -25,8 +25,8 @@ services:
     restart: always
     container_name: assignment1_mysql_db
     environment:
-      # MYSQL_ROOT_HOST: '172.17.0.1'
-      MYSQL_ROOT_HOST: '127.0.0.1'
+      MYSQL_ROOT_HOST: '172.17.0.1'
+      # MYSQL_ROOT_HOST: '127.0.0.1'
       MYSQL_DATABASE: 'assignment'
       # So you don't have to use root, but you can if you like
       MYSQL_USER: 'app_usr'
