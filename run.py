@@ -37,7 +37,9 @@ if DEBUG:
     app.logger.info('Page Compression = ' + 'FALSE' if DEBUG else 'TRUE' )
     app.logger.info('DBMS             = ' + app_config.SQLALCHEMY_DATABASE_URI)
     app.logger.info('ASSETS_ROOT      = ' + app_config.ASSETS_ROOT )
-app.logger.info('basedir      = ' + app_config.basedir )
+    app.logger.info('basedir          = ' + app_config.basedir )
+    app.logger.info('WTF_CSRF_ENABLED      = ' + str(app_config.WTF_CSRF_ENABLED ))
+    app.logger.info('SECRET_KEY      = ' + str(app_config.SECRET_KEY ))
 
 if __name__ == "__main__":
     app.run()
