@@ -93,6 +93,7 @@ def test_retrieval(url_key):
         cacheState='miss'
         keyFromDB = knownKeys.query.filter_by(key=requestedKey).first()
         if keyFromDB:
+            knowKey=keyFromDB.key
             image_path=keyFromDB.img_path
             base64_img=getBase64(image_path)
             response = getSingleCache(requestedKey) if putCache(requestedKey, base64_img)["success"]=="true" else {"data": {"success": True, "key": knowKey, "content": image_path}}
