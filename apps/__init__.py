@@ -32,7 +32,7 @@ def register_extensions(app):
 
 
 def register_blueprints(app):
-    for module_name in ('authentication', 'home', 'memcache', 'photoUpload'):
+    for module_name in ('authentication', 'home', 'memcache'):
         module = import_module('apps.services.{}.routes'.format(module_name))
         app.register_blueprint(module.blueprint)
 
