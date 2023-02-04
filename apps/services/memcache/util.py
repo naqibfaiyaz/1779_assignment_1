@@ -73,7 +73,8 @@ def putCache(key, value):
 
     if image_size > memcache_config["memcache_capacity"]:
         logger.warning("putCache: Image Size exceeds memcache capacity.")
-        response = {"success": "false","msg": "Image Size exceeds memcache capacity, inserted in table not in memcache"}
+        response = {"success": "true","msg": "Image Size exceeds memcache capacity, inserted in table not in memcache", "code": 201,
+            }
         return response
 
     memcache_free_space = memcache_config["memcache_capacity"] - memcache_config["memcache_size"]
