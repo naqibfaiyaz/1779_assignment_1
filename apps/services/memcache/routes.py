@@ -4,7 +4,7 @@ Copyright (c) 2019 - present AppSeed.us
 """
 
 from apps.services.memcache import blueprint
-from flask import render_template, json, request, jsonify
+from flask import render_template, json, request, jsonify, Response, redirect
 # from flask_login import login_required
 
 from apps.services.memcache.util import clearCache, getAllCaches, putCache, getSingleCache, invalidateCache, getCurrentPolicy, setCurrentPolicy
@@ -38,7 +38,11 @@ def test_delete_all():
         response = clearCache()
     except:
         db.session.rollback()
-    return response
+    
+    if 'success' in response and response['success']=='true':
+        return Response(json.dumps(response), status=200, mimetype='application/json')
+    else:
+        return Response(json.dumps(response), status=response['error']['code'], mimetype='application/json')
 
 @blueprint.route('/api/list_cache', methods=["POST"])
 def test_list_keys_cache():
@@ -82,10 +86,14 @@ def test_upload():
         base64_img=getBase64(image_path)
         
         response = putCache(requestedKey, base64_img)
-        return response
+        if 'success' in response and response['success']=='true':
+            return Response(json.dumps(response), status=200, mimetype='application/json')
+        else:
+            return Response(json.dumps(response), status=response['error']['code'], mimetype='application/json')
 
     else:
-        return json.dumps({"success": False, "error": {"code": 400, "message": str(login_form.errors.items())}})
+        return Response(json.dumps({"success": "false", "error": {"code": 400, "message": str(login_form.errors.items())}}), status=400, mimetype='application/json')
+
 
 @blueprint.route('/api/key/<url_key>', methods=["POST"])
 def test_retrieval(url_key):
@@ -108,7 +116,11 @@ def test_retrieval(url_key):
     db.session.add(newRequest)   
     db.session.commit()
     response['cache_status'] = cacheState
-    return response
+
+    if 'success' in response and response['success']=='true':
+        return Response(json.dumps(response), status=200, mimetype='application/json')
+    else:
+        return Response(json.dumps(response), status=404, mimetype='application/json')
 
 @blueprint.route('/api/refreshConfig', methods={"POST"})
 def refreshConfiguration():
@@ -131,12 +143,13 @@ def refreshConfiguration():
             db.session.add(newPolicy)  
         
         db.session.commit()
-        return setCurrentPolicy(request.form.get("replacement_policy"), request.form.get("capacity"))
+        return Response(json.dumps(setCurrentPolicy(request.form.get("replacement_policy"), request.form.get("capacity"))), status=200, mimetype='application/json')
+        
     else: 
-        return {
-            "success": False,
+        return Response(json.dumps({
+            "success": "false",
             "msg": "Either replacement_policy or capacity or both are missing."
-        }
+        }), status=400, mimetype='application/json')
 
 @blueprint.route('/api/getMemcacheSize', methods={"GET"})
 def test_getMemcacheSize():
@@ -161,3 +174,17 @@ def test_getConfig():
 #         "memcache_size2": size2,
 #         "memcache": len(cache)
 #         }
+
+@blueprint.errorhandler(403)
+def access_forbidden(error):
+    return render_template('home/page-404.html'), 404
+
+
+@blueprint.errorhandler(404)
+def not_found_error(error):
+    return render_template('home/page-404.html'), 404
+
+
+@blueprint.errorhandler(500)
+def internal_error(error):
+    return render_template('home/page-500.html'), 500

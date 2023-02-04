@@ -239,13 +239,23 @@ def getCurrentPolicy():
     }
 
 def setCurrentPolicy(policy, capacity):
-    memcache_config["memcache_policy"]=policy
-    memcache_config["memcache_capacity"]=int(capacity)
+    try:
+        memcache_config["memcache_policy"]=policy
+        memcache_config["memcache_capacity"]=int(capacity)
 
-    memcache_free_space = memcache_config["memcache_capacity"] - memcache_config["memcache_size"]
-    image_size=0
-    freeCache(image_size - memcache_free_space)
-    return {
-        "success": "true",
-        "content": memcache_config
-    }
+        memcache_free_space = memcache_config["memcache_capacity"] - memcache_config["memcache_size"]
+        image_size=0
+        freeCache(image_size - memcache_free_space)
+        return {
+            "success": "true",
+            "content": memcache_config
+        }
+    except Exception as e:
+        logger.error("Error from clearCache: " + str(e))
+        return {
+            "success": "false",
+            "error": { 
+                "code": 500,
+                "message": str(e)
+                }
+            }
