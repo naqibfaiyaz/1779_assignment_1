@@ -37,7 +37,14 @@ def getSingleCache(key):
                 "content": jsonCache
             }
         else:
-            raise ValueError(key + " is not present. Please upload the key and image.")
+            if memcache_config["memcache_policy"]=='no_cache':
+                response = {
+                    "success": "false",
+                    "key": key + " is not present in the cache",
+                    "content": "no_cache policy is active"
+                }
+            else:
+                raise ValueError(key + " is not present. Please upload the key and image.")
 
         logger.info("Response from getSingleCache ")
         logger.info(str(response["success"]))
@@ -75,7 +82,7 @@ def putCache(key, value):
     logger.info(memcache_config["memcache_capacity"])
     if image_size > memcache_config["memcache_capacity"]:
         logger.warning("putCache: Image Size exceeds memcache capacity.")
-        response = {"success": "true","msg": "Image Size exceeds memcache capacity, inserted in table not in memcache", "code": 201,
+        response = {"success": "true","msg": "Image Size exceeds memcache capacity, inserted in table not in memcache", "code": 201, "cache": "miss"
             }
         return response
 

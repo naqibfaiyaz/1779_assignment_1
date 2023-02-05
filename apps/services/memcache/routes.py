@@ -109,8 +109,10 @@ def test_retrieval(url_key):
     requestedKey = url_key or request.form.get('key')
     response = getSingleCache(requestedKey)
 
+    print(response)
     if "success" in response and response['success']=="true":
         cacheState='hit'
+        print(response)
     else:
         cacheState='miss'
         keyFromDB = knownKeys.query.filter_by(key=requestedKey).first()
@@ -118,8 +120,21 @@ def test_retrieval(url_key):
             knowKey=keyFromDB.key
             image_path=keyFromDB.img_path
             base64_img=getBase64(image_path)
-            response = getSingleCache(requestedKey) if putCache(requestedKey, base64_img)["success"]=="true" else {"data": {"success": True, "key": knowKey, "content": image_path}}
+            newResponse={
+                "success": "true", 
+                "key": knowKey, 
+                "content": {
+                    "img": base64_img,
+                    "accessed_at": None,
+                    "accessed_at_in_millis": None,
+                    "created_at": None,
+                    "image_size": None,
+                    "msg": "Serving from database directly"
+                }}
+            response = newResponse if "cache" in putCache(requestedKey, base64_img) and putCache(requestedKey, base64_img)['cache']=='miss' else getSingleCache(requestedKey)
     
+    print("response: ")
+    print(response)
     newRequest = memcahceRequests(type = cacheState,
                     known_key = requestedKey)
     db.session.add(newRequest)   
