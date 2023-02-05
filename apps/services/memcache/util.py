@@ -39,7 +39,8 @@ def getSingleCache(key):
         else:
             raise ValueError(key + " is not present. Please upload the key and image.")
 
-        logger.info("Response from getSingleCache ", str(response["success"]))
+        logger.info("Response from getSingleCache ")
+        logger.info(str(response["success"]))
         return response
     except ValueError as ve:
         logger.error("Error from getSingleCache: " + str(ve))
@@ -70,7 +71,8 @@ def putCache(key, value):
     
     logger.info(memcache_config)
     image_size = asizeof.asizeof(value)
-
+    logger.info(image_size)
+    logger.info(memcache_config["memcache_capacity"])
     if image_size > memcache_config["memcache_capacity"]:
         logger.warning("putCache: Image Size exceeds memcache capacity.")
         response = {"success": "true","msg": "Image Size exceeds memcache capacity, inserted in table not in memcache", "code": 201,
@@ -146,6 +148,10 @@ def freeCache(space_required):
                 invalidateCache(element_to_delete)
                 memcache_config["memcache_size"] -= freed_space_from_single
                 freed_space += freed_space_from_single
+
+        elif memcache_policy == "no_cache":
+            clearCache()
+            memcache_config["memcache_size"]=asizeof.asizeof(memcache)
 
         # else:
         #     logger.error()
