@@ -181,9 +181,15 @@ def getAllCaches():
     """
 
     try:
-        cachedData = memcache
+        cachedData={}
+        for key in memcache:
+            cachedData[key] = {
+                "key": key,
+                "created_at": memcache[key]["created_at"],
+                "accessed_at": memcache[key]["accessed_at"]
+            }
         response = {
-                "content": cachedData ,
+                "content": cachedData,
                 "success": "true",
                 "keys": list(cachedData.keys())
             }
