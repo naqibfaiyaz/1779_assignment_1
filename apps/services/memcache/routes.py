@@ -58,7 +58,7 @@ def test_list_keys_db():
     test_getMemcacheSize()
     allDBKeys=knownKeys.query.all()
     knownKeysInDB={i.key:i.serialize for i in allDBKeys}
-    print(type(knownKeysInDB))
+    
     return {
                 "content": knownKeysInDB,
                 "success": "true",
@@ -109,10 +109,8 @@ def test_retrieval(url_key):
     requestedKey = url_key or request.form.get('key')
     response = getSingleCache(requestedKey)
 
-    print(response)
     if "success" in response and response['success']=="true":
         cacheState='hit'
-        print(response)
     else:
         cacheState='miss'
         keyFromDB = knownKeys.query.filter_by(key=requestedKey).first()
@@ -133,8 +131,6 @@ def test_retrieval(url_key):
                 }}
             response = newResponse if "cache" in putCache(requestedKey, base64_img) and putCache(requestedKey, base64_img)['cache']=='miss' else getSingleCache(requestedKey)
     
-    print("response: ")
-    print(response)
     newRequest = memcahceRequests(type = cacheState,
                     known_key = requestedKey)
     db.session.add(newRequest)   

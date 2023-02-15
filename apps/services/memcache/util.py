@@ -188,7 +188,7 @@ def getAllCaches():
                 "keys": list(cachedData.keys())
             }
 
-        logger.info("response from getAllCaches " + str(response))
+        logger.info("response from getAllCaches " + str(response["success"]))
         return response
     except Exception as e:
         logger.error("Error from getAllCaches: " + str(e))
@@ -206,7 +206,7 @@ def clearCache()->str:
                 "success": "true",
                 "data": memcache
             }
-        logger.info("response from clearCache " + str(response))
+        logger.info("response from clearCache " + str(response["success"]))
         return response
     except Exception as e:
         logger.error("Error from clearCache: " + str(e))
@@ -240,7 +240,7 @@ def invalidateCache(key: str)->str:
                 "msg": key + " is not present in the cache",
             }
 
-        logger.info("response from invalidateCache: " + str(response))
+        logger.info("response from invalidateCache: " + str(response["msg"]))
         return response
     except Exception as e:
         logger.error("Error from invalidateCache: " + str(e))
