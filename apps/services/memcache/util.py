@@ -109,9 +109,9 @@ def putCache(key, value):
         memcache_config["memcache_size"] += image_size
 
         response = {
-            "data": {
-                key: memcache[key]["img"]
-            },
+            # "data": {
+            #     key: memcache[key]["img"]
+            # },
             "success": "true",
             "key": [key],
             "msg": key + ' : Successfully Saved'
