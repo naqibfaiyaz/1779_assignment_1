@@ -13,6 +13,7 @@ from apps.services.helper import upload_file, getBase64, removeAllImages
 from apps import memcache, logging, db
 from pympler import asizeof
 from apps.services.memcache.models import memcahceRequests, knownKeys, policyConfig, memcacheStates
+from apps.services.cloudWatch.routes import put_metric_data_cw
 import re
 
 @blueprint.route('/index')
@@ -181,27 +182,25 @@ def refreshConfiguration():
 @blueprint.route('/api/getMemcacheSize', methods={"GET"})
 def test_getMemcacheSize():
     try:
-        currentItemNo=memcacheStates(type = 'number_of_items',
-            value = len(memcache),
-            unit = 'items'
-        )
+        cacheStates=[{
+            'metricName': 'number_of_items',
+            'value': len(memcache),
+            'unit': 'Count',
+        },{
+            'metricName': 'total_cache_size',
+            'value': asizeof.asizeof(memcache)/1024,
+            'unit': 'Kilobytes',
+        }]
 
-        db.session.add(currentItemNo)  
-        db.session.commit()
-
-        currentCacheSize=memcacheStates(type = 'total_cache_size',
-            value = asizeof.asizeof(memcache)/1024,
-            unit = 'KB'
-        )
-
-        db.session.add(currentCacheSize)  
-        db.session.commit()
+        print(cacheStates[0])
+        response = put_metric_data_cw(cacheStates)
+        print(response)
 
         return Response(json.dumps({
             'success': 'true',
             'data': {
-                'number_of_items': currentItemNo.value,
-                'total_cache_size': currentCacheSize.value
+                'number_of_items': cacheStates[0],
+                'total_cache_size': cacheStates[1]
         }}), status=200, mimetype='application/json')
 
     except Exception as e:
