@@ -16,3 +16,4 @@ pandas==1.5.3
 pympler==1.0.1
 requests==2.28.2
 flask_mysqldb
+boto3==1.26.77

@@ -78,6 +78,7 @@ def test_upload():
         requestedKey = request.form.get('key')
         image_path = upload_file(request.files['file'])
         logging.info(requestedKey)
+        logging.info(image_path)
         key = knownKeys.query.filter_by(key=requestedKey).first()
         
         if key:
