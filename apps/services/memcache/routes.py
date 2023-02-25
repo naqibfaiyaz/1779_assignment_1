@@ -19,7 +19,7 @@ import re
 @blueprint.route('/index')
 # @login_required
 def RedirectIndex():
-    return render_template('home/index.html', segment='index')
+    return index()
 
 @blueprint.route('/')
 # @login_required
