@@ -1,8 +1,8 @@
-from apps.services.memcache import blueprint
+from apps.services.s3Manager import blueprint
 from apps import AWS_ACCESS_KEY, AWS_SECRET_KEY
 import boto3
 
-# @blueprint.route('/',methods=['GET'])
+@blueprint.route('/',methods=['GET'])
 # Display an HTML list of all s3 buckets.
 def s3_list():
     # Let's use Amazon S3
@@ -20,7 +20,7 @@ def s3_list():
     # return render_template("s3_examples/list.html",title="s3 Instances",buckets=buckets)
 
 
-# @blueprint.route('/<id>',methods=['GET'])
+@blueprint.route('/<id>',methods=['GET'])
 #Display details about a specific bucket.
 def s3_view(id):
     # s3 = boto3.resource('s3')

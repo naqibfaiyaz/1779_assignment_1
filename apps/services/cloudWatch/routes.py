@@ -1,10 +1,10 @@
 from flask import render_template, redirect, url_for, request
-from apps.services.memcache import blueprint
+from apps.services.cloudWatch import blueprint
 from apps import AWS_ACCESS_KEY, AWS_SECRET_KEY
 import boto3, datetime
 # from ec2_metadata import ec2_metadata
 
-# @blueprint.route('/',methods=['GET'])
+@blueprint.route('/',methods=['GET'])
 # Display an HTML list of all s3 buckets.
 def put_metric_data_cw(data):
     print(data, AWS_ACCESS_KEY, AWS_SECRET_KEY)
