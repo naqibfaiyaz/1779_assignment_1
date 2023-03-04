@@ -12,7 +12,7 @@ from apps.services.memcache.forms import ImageForm
 from apps.services.helper import upload_file, getBase64, removeAllImages
 from apps import memcache, logging, db
 from pympler import asizeof
-from apps.services.memcache.models import memcahceRequests, knownKeys, policyConfig, memcacheStates
+from apps.services.memcache.models import knownKeys, policyConfig
 from apps.services.cloudWatch.routes import put_metric_data_cw
 import re
 
@@ -112,9 +112,9 @@ def test_retrieval(url_key):
     response = getSingleCache(requestedKey)
 
     if "success" in response and response['success']=="true":
-        cacheState='hit'
+        cacheResponse='hit'
     else:
-        cacheState='miss'
+        cacheResponse='miss'
         keyFromDB = knownKeys.query.filter_by(key=requestedKey).first()
         if keyFromDB:
             knowKey=keyFromDB.key
@@ -133,11 +133,18 @@ def test_retrieval(url_key):
                 }}
             response = newResponse if "cache" in putCache(requestedKey, base64_img) and putCache(requestedKey, base64_img)['cache']=='miss' else getSingleCache(requestedKey)
     
-    newRequest = memcahceRequests(type = cacheState,
-                    known_key = requestedKey)
-    db.session.add(newRequest)   
-    db.session.commit()
-    response['cache_status'] = cacheState
+    # newRequest = memcahceRequests(type = cacheState,
+    #                 known_key = requestedKey)
+    # db.session.add(newRequest)   
+    # db.session.commit()
+    cacheStates=[{
+            'metricName': 'response_type',
+            'value': cacheResponse
+        }]
+
+    print(cacheStates[0])
+    response = put_metric_data_cw('cache_response', cacheStates)
+    response['cache_status'] = cacheResponse
     test_getMemcacheSize()
     if 'success' in response and response['success']=='true':
         return Response(json.dumps(response), status=200, mimetype='application/json')
@@ -193,7 +200,7 @@ def test_getMemcacheSize():
         }]
 
         print(cacheStates[0])
-        response = put_metric_data_cw(cacheStates)
+        response = put_metric_data_cw('cache_states', cacheStates)
         print(response)
 
         return Response(json.dumps({
