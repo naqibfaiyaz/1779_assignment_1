@@ -6,7 +6,7 @@ import boto3, datetime
 
 @blueprint.route('/',methods=['GET'])
 # Display an HTML list of all s3 buckets.
-def put_metric_data_cw(data):
+def put_metric_data_cw(namespaceData, data):
     print(data, AWS_ACCESS_KEY, AWS_SECRET_KEY)
     # Let's use Amazon S3
     try:
@@ -36,7 +36,7 @@ def put_metric_data_cw(data):
             print(metrics)
             # Print out bucket names
             response = cloudWatch.put_metric_data(
-                Namespace='cache_states',
+                Namespace=namespaceData,
                 MetricData=metrics
             )
     except Exception as e:

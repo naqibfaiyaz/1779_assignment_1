@@ -16,6 +16,7 @@ sql
 # venv
 env
 venv
+*.env
 .env
 
 # other
