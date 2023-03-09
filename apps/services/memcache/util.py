@@ -33,7 +33,7 @@ def getSingleCache(key):
             jsonCache.update({"accessed_at_in_millis": round(time.time())})
             response = {
                 "success": "true",
-                "key": [key],
+                "key": key,
                 "content": jsonCache
             }
         else:
@@ -113,7 +113,7 @@ def putCache(key, value):
             #     key: memcache[key]["img"]
             # },
             "success": "true",
-            "key": [key],
+            "key": key,
             "msg": key + ' : Successfully Saved'
         }
 
