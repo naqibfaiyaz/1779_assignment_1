@@ -148,30 +148,8 @@ def test_retrieval(url_key):
 def refreshConfiguration():
     # test_getMemcacheSize()
     if request.form.get("replacement_policy") and request.form.get("capacity"):
-        currentPolicy=policyConfig.query.filter_by(policy_name='replacement_policy').first()
-        if currentPolicy:
-            currentPolicy.value=request.form.get("replacement_policy")
-        else:
-            newPolicy = policyConfig(policy_name = "replacement_policy",
-                    value = request.form.get("replacement_policy"))
-            db.session.add(newPolicy)  
-        db.session.commit()
-
-        if request.form.get("replacement_policy")=='no_cache':
-            RequestedCapacity = 0
-        else: 
-            RequestedCapacity =  request.form.get("capacity")
         
-        currentcapacity=policyConfig.query.filter_by(policy_name='capacity').first()
-        if currentcapacity:
-            currentcapacity.value=RequestedCapacity
-        else:
-            newPolicy = policyConfig(policy_name = "capacity",
-                    value = RequestedCapacity)
-            db.session.add(newPolicy)  
-        
-        db.session.commit()
-        return Response(json.dumps(setCurrentPolicy(request.form.get("replacement_policy"), RequestedCapacity)), status=200, mimetype='application/json')
+        return Response(json.dumps(setCurrentPolicy(request.form.get("replacement_policy"), request.form.get("capacity"))), status=200, mimetype='application/json')
         
     else: 
         return Response(json.dumps({
