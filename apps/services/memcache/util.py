@@ -73,7 +73,7 @@ def putCache(key, value):
     >>> putCache("test1", "/static/asset/public/img1.jpg") 
     '{"data": {"test1": "/static/asset/public/img1.jpg"}, "keys": ["test1"], "msg": "test1 : Successfully Saved", "success": "true"}'
     """
-    setCurrentPolicy(policyConfig.query.filter_by(policy_name='replacement_policy').first().value, policyConfig.query.filter_by(policy_name='capacity').first().value)
+    setCurrentPolicy(policyConfig.query.filter_by(policy_name='policy').first().value, policyConfig.query.filter_by(policy_name='cacheSize').first().value)
     memcache_config["memcache_size"] = asizeof.asizeof(memcache)
     
     logger.info(memcache_config)
