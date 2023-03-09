@@ -9,11 +9,11 @@ from flask import render_template, json, request, jsonify, Response, redirect
 
 from apps.services.memcache.util import clearCache, getAllCaches, putCache, getSingleCache, invalidateCache, getCurrentPolicy, setCurrentPolicy
 from apps.services.memcache.forms import ImageForm
-from apps.services.helper import upload_file, getBase64, removeAllImages
+from apps.services.helper import getBase64
 from apps import memcache, logging, db
 from pympler import asizeof
 from apps.services.memcache.models import knownKeys, policyConfig
-from apps.services.cloudWatch.routes import put_metric_data_cw
+# from apps.services.cloudWatch.routes import put_metric_data_cw
 import re
 
 @blueprint.route('/index')
@@ -33,30 +33,29 @@ def clear():
 @blueprint.route('/api/delete_all', methods=["POST"])
 def test_delete_all():
     try:
-        test_getMemcacheSize()
+        # test_getMemcacheSize()
         db.session.query(knownKeys).delete()
         db.session.commit()
-        removeAllImages()
 
         response = clearCache()
     except:
         db.session.rollback()
     
     if 'success' in response and response['success']=='true':
-        test_getMemcacheSize()
+        # test_getMemcacheSize()
         return Response(json.dumps(response), status=200, mimetype='application/json')
     else:
-        test_getMemcacheSize()
+        # test_getMemcacheSize()
         return Response(json.dumps(response), status=response['error']['code'], mimetype='application/json')
 
 @blueprint.route('/api/list_cache', methods=["POST"])
 def test_list_keys_cache():
-    test_getMemcacheSize()
+    # test_getMemcacheSize()
     return getAllCaches()
 
 @blueprint.route('/api/list_keys', methods=["POST"])
 def test_list_keys_db():
-    test_getMemcacheSize()
+    # test_getMemcacheSize()
     allDBKeys=knownKeys.query.all()
     knownKeysInDB={i.key:i.serialize for i in allDBKeys}
     
@@ -72,12 +71,12 @@ def test_invalidate(url_key):
 
 @blueprint.route('/api/upload', methods=["POST"])
 def test_upload():
-    test_getMemcacheSize()
+    # test_getMemcacheSize()
     login_form = ImageForm(meta={'csrf': False})
     logging.info(str(login_form))
     if login_form.validate_on_submit():
         requestedKey = request.form.get('key')
-        image_path = upload_file(request.files['file'])
+        image_path = request.form.get('image_path')
         logging.info(requestedKey)
         logging.info(image_path)
         key = knownKeys.query.filter_by(key=requestedKey).first()
@@ -95,7 +94,7 @@ def test_upload():
         base64_img=getBase64(image_path)
         
         response = putCache(requestedKey, base64_img)
-        test_getMemcacheSize()
+        # test_getMemcacheSize()
         if 'success' in response and response['success']=='true':
             return Response(json.dumps(response), status=response['code'] if 'code' in response else 200, mimetype='application/json')
         else:
@@ -107,10 +106,11 @@ def test_upload():
 
 @blueprint.route('/api/key/<url_key>', methods=["POST"])
 def test_retrieval(url_key):
-    test_getMemcacheSize()
+    # test_getMemcacheSize()
     requestedKey = url_key or request.form.get('key')
+    print(requestedKey)
     response = getSingleCache(requestedKey)
-
+    print(response)
     if "success" in response and response['success']=="true":
         cacheResponse='hit'
     else:
@@ -137,15 +137,8 @@ def test_retrieval(url_key):
     #                 known_key = requestedKey)
     # db.session.add(newRequest)   
     # db.session.commit()
-    cacheStates=[{
-            'metricName': 'response_type',
-            'value': cacheResponse
-        }]
-
-    print(cacheStates[0])
-    response = put_metric_data_cw('cache_response', cacheStates)
     response['cache_status'] = cacheResponse
-    test_getMemcacheSize()
+    print(response)
     if 'success' in response and response['success']=='true':
         return Response(json.dumps(response), status=200, mimetype='application/json')
     else:
@@ -153,7 +146,7 @@ def test_retrieval(url_key):
 
 @blueprint.route('/api/refreshConfig', methods={"POST"})
 def refreshConfiguration():
-    test_getMemcacheSize()
+    # test_getMemcacheSize()
     if request.form.get("replacement_policy") and request.form.get("capacity"):
         currentPolicy=policyConfig.query.filter_by(policy_name='replacement_policy').first()
         if currentPolicy:
@@ -185,40 +178,6 @@ def refreshConfiguration():
             "success": "false",
             "msg": "Either replacement_policy or capacity or both are missing."
         }), status=400, mimetype='application/json')
-
-@blueprint.route('/api/getMemcacheSize', methods={"GET"})
-def test_getMemcacheSize():
-    try:
-        cacheStates=[{
-            'metricName': 'number_of_items',
-            'value': len(memcache),
-            'unit': 'Count',
-        },{
-            'metricName': 'total_cache_size',
-            'value': asizeof.asizeof(memcache)/1024,
-            'unit': 'Kilobytes',
-        }]
-
-        print(cacheStates[0])
-        response = put_metric_data_cw('cache_states', cacheStates)
-        print(response)
-
-        return Response(json.dumps({
-            'success': 'true',
-            'data': {
-                'number_of_items': cacheStates[0],
-                'total_cache_size': cacheStates[1]
-        }}), status=200, mimetype='application/json')
-
-    except Exception as e:
-        logging.error("Error from test_getMemcacheSize: " + str(e))
-        Response(json.dumps({
-            "success": "false",
-            "error": { 
-                "code": 500,
-                "message": str(e)
-                }
-            }), status=400, mimetype='application/json')
 
 @blueprint.route('/api/getConfig', methods={"GET"})
 def test_getConfig():
