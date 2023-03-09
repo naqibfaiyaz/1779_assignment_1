@@ -12,7 +12,7 @@ from apps.services.memcache.forms import ImageForm
 from apps.services.helper import getBase64
 from apps import memcache, logging, db
 from pympler import asizeof
-from apps.services.memcache.models import knownKeys, policyConfig
+from apps.services.memcache.models import knownKeys
 # from apps.services.cloudWatch.routes import put_metric_data_cw
 import re
 
@@ -157,7 +157,7 @@ def refreshConfiguration():
             "msg": "Either replacement_policy or capacity or both are missing."
         }), status=400, mimetype='application/json')
 
-@blueprint.route('/api/getConfig', methods={"GET"})
+@blueprint.route('/api/getConfig', methods=["GET"])
 def test_getConfig():
     return getCurrentPolicy()
 
