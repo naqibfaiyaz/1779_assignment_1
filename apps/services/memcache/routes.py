@@ -162,18 +162,15 @@ def test_getConfig():
     return getCurrentPolicy()
 
 
-
-# @blueprint.route('/getCacheSize')
-# def getCacheSize():
-#     cache = memcache
-#     size= asizeof.asizeof(cache)/1024/1024
-#     size2= sys.getsizeof(cache)/1024/1024
-#     logging.info(size)
-#     return {
-#         "memcache_size1": size,
-#         "memcache_size2": size2,
-#         "memcache": len(cache)
-#         }
+@blueprint.route('/api/getCacheData', methods=["POST"])
+def getCacheSize():
+    cache = memcache
+    size= asizeof.asizeof(cache)/1024/1024
+    logging.info(size)
+    return {
+        "memcache_size_mb": size,
+        "memcache_keys_count": len(cache)
+        }
 
 @blueprint.errorhandler(403)
 def access_forbidden(error):
