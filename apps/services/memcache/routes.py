@@ -26,9 +26,9 @@ def RedirectIndex():
 def index():
     return render_template('home/index.html', segment='index')
 
-@blueprint.route('/clearAll')
+@blueprint.route('/api/clearAll', methods=["GET", "POST"])
 def clear():
-    return render_template("photoUpload/photos.html", msg=json.loads(clearCache())["msg"])
+    return clearCache()
 
 @blueprint.route('/api/delete_all', methods=["POST"])
 def test_delete_all():
