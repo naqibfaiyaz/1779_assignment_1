@@ -206,12 +206,13 @@ def clearCache()->str:
     '{"data": {}, "success": "true"}'
     """
     try:
+        print(memcache)
         memcache.clear()
         response={
                 "success": "true",
                 "data": memcache
             }
-        logger.info("response from clearCache " + str(response["success"]))
+        # logger.info("response from clearCache " + str(response["success"]))
         return response
     except Exception as e:
         logger.error("Error from clearCache: " + str(e))
@@ -260,7 +261,7 @@ def getCurrentPolicy():
 def setCurrentPolicy(policy, capacity):
     try:
         memcache_config["memcache_policy"]=policy
-        memcache_config["memcache_capacity"]=int(capacity)
+        memcache_config["memcache_capacity"]=int(capacity)*1024*1024
 
         memcache_free_space = memcache_config["memcache_capacity"] - memcache_config["memcache_size"]
         image_size=0
